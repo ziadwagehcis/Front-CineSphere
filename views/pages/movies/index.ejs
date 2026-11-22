@@ -367,6 +367,29 @@
                 <% } %>
             </div>
 
+            <form class="pagination-jump-form" action="/" method="get">
+                <input type="hidden" name="q" value="<%= query %>">
+                <input type="hidden" name="searchType" value="<%= searchType %>">
+                <input type="hidden" name="genre" value="<%= genre %>">
+                <input type="hidden" name="year" value="<%= year %>">
+                <input type="hidden" name="cast" value="<%= cast %>">
+                <input type="hidden" name="sortBy" value="<%= sortBy %>">
+                <label for="paginationPage">Go to page</label>
+                <input
+                    id="paginationPage"
+                    name="page"
+                    type="number"
+                    min="1"
+                    max="<%= totalPages %>"
+                    step="1"
+                    inputmode="numeric"
+                    value="<%= page %>"
+                    required
+                >
+                <span>of <strong><%= totalPages %></strong></span>
+                <button class="pagination-jump-button" type="submit">Go</button>
+            </form>
+
             <% if (page < totalPages) { %>
                 <a class="pagination-link" href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=<%= page + 1 %>">Next →</a>
             <% } else { %>

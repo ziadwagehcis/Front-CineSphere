@@ -48,7 +48,10 @@ webRouter.get("/", async (req, res) => {
         cast: String(req.query.cast || "").trim(),
         sortBy: String(req.query.sortBy || "year_desc").trim()
     };
-    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const requestedPage = Number.parseInt(req.query.page, 10);
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+        ? requestedPage
+        : 1;
     const pageTitle = filters.q
         ? `Search: "${filters.q}"`
         : filters.genre && filters.genre.toLowerCase() !== "all"
@@ -70,6 +73,11 @@ webRouter.get("/", async (req, res) => {
             requestApi("/genres"),
             requestApi(`/movies?${featuredQuery}`)
         ]);
+        const totalPages = Math.max(1, Math.ceil(movieResult.total / PAGE_SIZE));
+        if (page > totalPages) {
+            const lastPageQuery = queryString({ ...filters, page: totalPages });
+            return res.redirect(`/?${lastPageQuery}`);
+        }
         const paginationQuery = queryString(filters);
 
         return res.render("pages/movies/index", {
@@ -84,7 +92,7 @@ webRouter.get("/", async (req, res) => {
             page,
             pageSize: PAGE_SIZE,
             totalMovies: movieResult.total,
-            totalPages: Math.max(1, Math.ceil(movieResult.total / PAGE_SIZE)),
+            totalPages,
             paginationQuery,
             availableGenres: genresResult.data,
             stats: statsResult.data,
@@ -109,7 +117,7 @@ webRouter.get("/", async (req, res) => {
             totalPages: 1,
             paginationQuery: queryString(filters),
             availableGenres: [],
-            stats: { totalMovies: 0, totalGenres: 0, topRated: null },
+            stats: null,
             featuredMovies: [],
             alert: null,
             errorMessage: "The movie service is temporarily unavailable. Please try again."

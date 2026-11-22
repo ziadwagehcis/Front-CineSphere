@@ -17,4 +17,6 @@ Deploy this repository with its root directory set to the repository root. `verc
 
 The production frontend calls **https://back-cinesphere.vercel.app** by default. To override this, set `BACKEND_API_URL` to the backend origin (with or without the trailing `/api`). No MongoDB credentials should be added to this frontend project.
 
+Pagination includes a direct page selector and keeps active search and filter values.
+
 Movie poster images should use public image URLs. Vercel function filesystems are temporary, so uploaded local files are not suitable for persistent posters.
