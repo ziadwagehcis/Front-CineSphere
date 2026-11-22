@@ -13,7 +13,7 @@ Open **http://localhost:4200**. Set `BACKEND_API_URL` only if the API is hosted 
 
 ## Vercel
 
-Deploy this repository with its root directory set to the repository root. Vercel detects the Express app in `server.js` and serves static assets from `public/`.
+Deploy this repository with its root directory set to the repository root. `vercel.json` selects Vercel's Express framework preset, and static assets are served from `public/`.
 
 The production frontend calls **https://back-cinesphere.vercel.app** by default. To override this, set `BACKEND_API_URL` to the backend origin (with or without the trailing `/api`). No MongoDB credentials should be added to this frontend project.
 
