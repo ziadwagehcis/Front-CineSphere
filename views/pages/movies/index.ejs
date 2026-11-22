@@ -324,6 +324,16 @@
                 </article>
             <% }) %>
         </div>
+    <% } else if (errorMessage) { %>
+        <div class="empty-state" role="alert">
+            <div class="empty-icon">⚠️</div>
+            <h3 class="empty-title">Catalog temporarily unavailable</h3>
+            <p class="empty-desc">The catalog could not be loaded. Retry the request or check the API status.</p>
+            <div class="empty-actions">
+                <a href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=1" class="btn btn-primary btn-md">Try again</a>
+                <a href="<%= backendApiUrl %>/api/health" class="btn btn-secondary btn-md" target="_blank" rel="noopener noreferrer">Check API status</a>
+            </div>
+        </div>
     <% } else { %>
         <div class="empty-state">
             <div class="empty-icon">🎬</div>
