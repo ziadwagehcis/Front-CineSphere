@@ -2,10 +2,9 @@ const express = require("express");
 const path = require("path");
 const compression = require("compression");
 const helmet = require("helmet");
-const { getDb, closeConnection } = require("../back/models/mongodbConnection");
 
 const app = express();
-const movieModel = require("../back/models/movieModel");
+const { backendBaseUrl } = require("./lib/backendApi");
 app.disable("x-powered-by");
 app.use(compression());
 app.use(helmet({
@@ -34,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.locals.siteName = "CineSphere";
+app.locals.backendApiUrl = backendBaseUrl;
 app.locals.getMoviePoster = function (thumbnail, poster) {
     const candidates = [thumbnail, poster];
     const clean = candidates
@@ -49,7 +49,7 @@ app.locals.getMoviePoster = function (thumbnail, poster) {
     return `/img/movies/${value}`;
 };
 
-app.use(require("../back/route/web"));
+app.use(require("./routes/web"));
 
 app.use((req, res) => {
     res.status(404).render("pages/movies/show", {
@@ -72,21 +72,13 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.FRONT_PORT || 4200;
-getDb()
-    .then(async () => {
-        await movieModel.ensureIndexes();
-        console.log("[CineSphere Frontend] MongoDB database connected and catalog indexes verified.");
-    })
-    .catch(err => console.warn(`[CineSphere Frontend] Initial MongoDB connection warning: ${err.message}.`));
-
 const server = app.listen(port, () => {
-    console.log(`[CineSphere Frontend] Classic movie site running at http://localhost:${port}`);
+    console.log(`[CineSphere Frontend] Web app listening on port ${port}; API: ${backendBaseUrl}`);
 });
 
 async function shutdown(signal) {
     console.log(`\n${signal}: shutting down frontend...`);
     server.close(async () => {
-        await closeConnection();
         process.exit(0);
     });
 }

@@ -4,6 +4,9 @@
   "scripts": {
     "start": "node server.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "private": true,
   "dependencies": {
     "compression": "^1.8.2",

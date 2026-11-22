@@ -5,7 +5,7 @@
         <div class="form-header">
             <span class="form-badge">MongoDB Document: <%= movie._id %></span>
             <h1 class="form-title">Edit Movie</h1>
-            <p class="form-subtitle">Update movie metadata, adjust genres, or refresh the poster image.</p>
+            <p class="form-subtitle">Update movie metadata, adjust genres, or provide a hosted poster URL.</p>
         </div>
 
         <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
@@ -15,7 +15,7 @@
             </div>
         <% } %>
 
-        <form action="/movies/update" method="post" enctype="multipart/form-data" class="modern-form" id="updateMovieForm">
+        <form action="/movies/update" method="post" class="modern-form" id="updateMovieForm">
             <input type="hidden" name="id" value="<%= movie._id %>">
 
             <div class="form-grid">
@@ -159,24 +159,12 @@
                 <!-- Poster Image Section -->
                 <div class="form-group span-2 poster-input-section">
                     <label>Movie Poster</label>
-                    <span class="field-hint">Upload a replacement image or provide a new poster URL. Leave untouched to keep the current poster.</span>
+                    <span class="field-hint">Provide a public image URL. Leave blank to keep the current poster.</span>
 
                     <div class="poster-input-grid">
                         <div class="poster-fields">
                             <div class="sub-input-group">
-                                <label for="fileInput" class="sub-label">1. Upload Replacement File</label>
-                                <input 
-                                    type="file" 
-                                    id="fileInput" 
-                                    name="thumbnail" 
-                                    accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                                >
-                            </div>
-
-                            <div class="divider-text"><span>OR</span></div>
-
-                            <div class="sub-input-group">
-                                <label for="urlInput" class="sub-label">2. Poster Image URL</label>
+                                <label for="urlInput" class="sub-label">Poster Image URL</label>
                                 <input 
                                     type="url" 
                                     id="urlInput" 
@@ -284,29 +272,16 @@
     });
 
     // Poster Live Preview
-    const fileInput = document.getElementById('fileInput');
     const urlInput = document.getElementById('urlInput');
     const previewImg = document.getElementById('posterPreviewImg');
     const defaultSrc = previewImg.src;
-
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                };
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-    }
 
     if (urlInput) {
         urlInput.addEventListener('input', function() {
             const val = this.value.trim();
             if (val.startsWith('http://') || val.startsWith('https://')) {
                 previewImg.src = val;
-            } else if (!val && (!fileInput || !fileInput.files.length)) {
+            } else if (!val) {
                 previewImg.src = defaultSrc;
             }
         });

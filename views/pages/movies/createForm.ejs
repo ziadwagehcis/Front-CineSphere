@@ -5,7 +5,7 @@
         <div class="form-header">
             <span class="form-badge">+ Add To MongoDB</span>
             <h1 class="form-title">Create New Movie</h1>
-            <p class="form-subtitle">Enter movie details, assign genres, and upload or link a high-res poster.</p>
+            <p class="form-subtitle">Enter movie details, assign genres, and link a hosted poster image.</p>
         </div>
 
         <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
@@ -15,7 +15,7 @@
             </div>
         <% } %>
 
-        <form action="/movies" method="post" enctype="multipart/form-data" class="modern-form" id="movieForm">
+        <form action="/movies" method="post" class="modern-form" id="movieForm">
             
             <div class="form-grid">
                 <!-- Title -->
@@ -141,24 +141,12 @@
                 <!-- Poster Image Section -->
                 <div class="form-group span-2 poster-input-section">
                     <label>Movie Poster</label>
-                    <span class="field-hint">Upload a local image file OR paste an image URL.</span>
+                    <span class="field-hint">Use a public image URL so the poster remains available after deployment.</span>
 
                     <div class="poster-input-grid">
                         <div class="poster-fields">
                             <div class="sub-input-group">
-                                <label for="fileInput" class="sub-label">1. Upload Image File</label>
-                                <input 
-                                    type="file" 
-                                    id="fileInput" 
-                                    name="thumbnail" 
-                                    accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                                >
-                            </div>
-
-                            <div class="divider-text"><span>OR</span></div>
-
-                            <div class="sub-input-group">
-                                <label for="urlInput" class="sub-label">2. Poster Image URL</label>
+                                <label for="urlInput" class="sub-label">Poster Image URL</label>
                                 <input 
                                     type="url" 
                                     id="urlInput" 
@@ -263,28 +251,15 @@
     addGenre("Action");
 
     // Poster Live Preview Logic
-    const fileInput = document.getElementById('fileInput');
     const urlInput = document.getElementById('urlInput');
     const previewImg = document.getElementById('posterPreviewImg');
-
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                };
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-    }
 
     if (urlInput) {
         urlInput.addEventListener('input', function() {
             const val = this.value.trim();
             if (val.startsWith('http://') || val.startsWith('https://')) {
                 previewImg.src = val;
-            } else if (!val && !fileInput.files.length) {
+            } else if (!val) {
                 previewImg.src = '/img/placeholder-poster.svg';
             }
         });
