@@ -1,0 +1,98 @@
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-content">
+        <div class="footer-brand-col">
+            <a class="brand" href="/">
+                <span class="brand-icon">🎬</span>
+                <span class="brand-text">Cine<span class="brand-highlight">Sphere</span></span>
+            </a>
+            <p class="footer-desc">
+                Your premier destination for exploring cinematic masterpieces, discovering timeless classics, and managing movies with a high-performance MongoDB backend.
+            </p>
+        </div>
+
+        <div class="footer-links-col">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/">Browse All Movies</a></li>
+                <li><a href="/?sortBy=top_rated">Top 250 Legends</a></li>
+                <li><a href="/?genre=Sci-Fi">Sci-Fi Hits</a></li>
+                <li><a href="/?genre=Action">Action Blockbusters</a></li>
+                <li><a href="/movies/create">+ Add New Movie</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-tech-col">
+            <h4>Tech Stack</h4>
+            <div class="tech-tags">
+                <span class="tech-tag">Node.js</span>
+                <span class="tech-tag">Express 5</span>
+                <span class="tech-tag">MongoDB</span>
+                <span class="tech-tag">EJS</span>
+                <span class="tech-tag">Multer</span>
+                <span class="tech-tag">CSS3</span>
+            </div>
+            <p class="tech-note">Running on localhost &bull; Connected via .env</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+            <p>&copy; <%= new Date().getFullYear() %> CineSphere. Engineered for movie enthusiasts.</p>
+            <p class="footer-credits">Data & Posters powered by TMDB & Community.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Mobile Navigation Toggle
+(function() {
+    const toggle = document.getElementById('navToggle');
+    const menu = document.getElementById('navMenu');
+    if (toggle && menu) {
+        toggle.addEventListener('click', function() {
+            menu.classList.toggle('open');
+            toggle.classList.toggle('active');
+        });
+    }
+
+    // Theme toggle with saved preference
+    const themeToggle = document.getElementById('themeToggle');
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('cinesphere-theme', theme);
+        if (themeToggle) {
+            const isLight = theme === 'light';
+            themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+            themeToggle.setAttribute('title', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+        }
+        if (themeMeta) themeMeta.setAttribute('content', theme === 'light' ? '#f4f7fb' : '#090d16');
+    }
+
+    if (themeToggle) {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        applyTheme(currentTheme);
+        themeToggle.addEventListener('click', function() {
+            const nextTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            applyTheme(nextTheme);
+        });
+    }
+
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert-banner');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-10px)';
+            setTimeout(function() { alert.remove(); }, 600);
+        }, 5000);
+    });
+})();
+</script>
+
+</body>
+</html>

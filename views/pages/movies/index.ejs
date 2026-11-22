@@ -1,0 +1,380 @@
+<%- include('../../partials/siteHeader', { pageTitle }) %>
+
+<div class="container">
+
+    <!-- Flash Alerts -->
+    <% if (typeof alert !== 'undefined' && alert) { %>
+        <% if (alert === 'created') { %>
+            <div class="alert-banner alert-success">
+                <span class="alert-icon">✓</span>
+                <span><strong>Success!</strong> Movie was added to the database.</span>
+            </div>
+        <% } else if (alert === 'updated') { %>
+            <div class="alert-banner alert-info">
+                <span class="alert-icon">✓</span>
+                <span><strong>Updated!</strong> Movie details have been successfully saved.</span>
+            </div>
+        <% } else if (alert === 'deleted') { %>
+            <div class="alert-banner alert-warning">
+                <span class="alert-icon">🗑</span>
+                <span><strong>Deleted!</strong> Movie was permanently removed from MongoDB.</span>
+            </div>
+        <% } %>
+    <% } %>
+
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="alert-banner alert-danger">
+            <span class="alert-icon">⚠</span>
+            <span><%= errorMessage %></span>
+        </div>
+    <% } %>
+
+    <!-- Hero Spotlight Section (Visible when no query filter is active) -->
+    <% if (page === 1 && !query && (!genre || genre.toLowerCase() === 'all') && !year && !cast && sortBy === 'year_desc' && featuredMovies && featuredMovies.length > 0) { %>
+        <% const heroMovie = featuredMovies[0]; %>
+        <section class="hero-spotlight">
+            <div class="hero-backdrop" style="background-image: url('<%= getMoviePoster(heroMovie.thumbnail, heroMovie.poster) %>');"></div>
+            <div class="hero-overlay"></div>
+            
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-pulse"></span>
+                    <span>FEATURED MASTERPIECE</span>
+                </div>
+
+                <h1 class="hero-title"><%= heroMovie.title %></h1>
+
+                <div class="hero-meta">
+                    <span class="rating-chip">
+                        <span class="star">★</span> <%= heroMovie.rating ? Number(heroMovie.rating).toFixed(1) : '8.8' %>
+                    </span>
+                    <span class="meta-chip"><%= heroMovie.year %></span>
+                    <% if (heroMovie.duration) { %>
+                        <span class="meta-chip"><%= heroMovie.duration %></span>
+                    <% } %>
+                    <% if (heroMovie.director) { %>
+                        <span class="meta-chip director-chip">Dir. <%= heroMovie.director %></span>
+                    <% } %>
+                </div>
+
+                <div class="hero-genres">
+                    <% (heroMovie.genres || []).forEach(g => { %>
+                        <a href="/?genre=<%= encodeURIComponent(g) %>" class="hero-genre-tag"><%= g %></a>
+                    <% }) %>
+                </div>
+
+                <% if (heroMovie.description) { %>
+                    <p class="hero-desc"><%= heroMovie.description %></p>
+                <% } %>
+
+                <div class="hero-actions">
+                    <a href="/movies/show/<%= heroMovie._id %>" class="btn btn-primary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <span>View Details</span>
+                    </a>
+                    <a href="/movies/edit/<%= heroMovie._id %>" class="btn btn-secondary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <span>Edit Movie</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-poster-wrapper">
+                <img 
+                    src="<%= getMoviePoster(heroMovie.thumbnail, heroMovie.poster) %>" 
+                    alt="<%= heroMovie.title %>"
+                    class="hero-poster"
+                    onerror="this.onerror=null;this.src='/img/placeholder-poster.svg';"
+                >
+            </div>
+        </section>
+    <% } %>
+
+    <!-- Stats Bar -->
+    <% if (stats) { %>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-num"><%= stats.totalMovies || movies.length %></span>
+                <span class="stat-label">Total Titles</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-num"><%= stats.totalGenres || (availableGenres ? availableGenres.length : 0) %></span>
+                <span class="stat-label">Genres</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-num stat-highlight">★ <%= stats.topRated && stats.topRated.rating ? stats.topRated.rating.toFixed(1) : '9.3' %></span>
+                <span class="stat-label">Top IMDb Score</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item db-status">
+                <span class="status-dot"></span>
+                <span class="stat-label">MongoDB: <strong class="db-name">movies</strong></span>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Search & Filter Toolbar -->
+    <section class="toolbar-section">
+        <form class="search-form" action="/" method="get">
+            
+            <div class="search-input-wrap">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                    type="text"
+                    name="q"
+                    value="<%= query %>"
+                    placeholder="Search titles, actors, directors..."
+                    autocomplete="off"
+                >
+                <% if (query) { %>
+                    <a href="/" class="search-clear-btn" title="Clear Search">&times;</a>
+                <% } %>
+            </div>
+
+            <div class="toolbar-selects">
+                <div class="select-wrap">
+                    <select name="searchType" title="Filter search scope">
+                        <option value="all" <%= searchType === 'all' ? 'selected' : '' %>>All Fields</option>
+                        <option value="title" <%= searchType === 'title' ? 'selected' : '' %>>Title Only</option>
+                        <option value="cast" <%= searchType === 'cast' ? 'selected' : '' %>>Actor / Cast</option>
+                        <option value="director" <%= searchType === 'director' ? 'selected' : '' %>>Director</option>
+                    </select>
+                </div>
+
+                <div class="select-wrap">
+                    <select name="sortBy" onchange="this.form.submit()" title="Sort order">
+                        <option value="year_desc" <%= sortBy === 'year_desc' ? 'selected' : '' %>>Newest First</option>
+                        <option value="top_rated" <%= sortBy === 'top_rated' || sortBy === 'rating' ? 'selected' : '' %>>Top Rated ★</option>
+                        <option value="year_asc" <%= sortBy === 'year_asc' ? 'selected' : '' %>>Oldest First</option>
+                        <option value="title_asc" <%= sortBy === 'title_asc' ? 'selected' : '' %>>Title (A - Z)</option>
+                    </select>
+                </div>
+
+                <!-- Preserve genre if currently chosen -->
+                <% if (genre && genre.toLowerCase() !== 'all') { %>
+                    <input type="hidden" name="genre" value="<%= genre %>">
+                <% } %>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>Search</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Genre Quick Bar -->
+        <div class="genre-scroll-bar">
+            <span class="genre-bar-label">Genres:</span>
+            <div class="genre-pills">
+                <a 
+                    href="/<%= sortBy !== 'year_desc' ? '?sortBy=' + sortBy : '' %>"
+                    class="genre-pill <%= !genre || genre.toLowerCase() === 'all' ? 'active' : '' %>"
+                >
+                    All Movies
+                </a>
+
+                <% 
+                const defaultGenres = ["Action", "Sci-Fi", "Drama", "Comedy", "Animation", "Crime", "Thriller", "Adventure", "Horror", "Romance", "Biography", "Fantasy"];
+                const displayGenres = availableGenres && availableGenres.length > 0 ? availableGenres : defaultGenres;
+                displayGenres.forEach(g => { 
+                %>
+                    <a 
+                        href="/?genre=<%= encodeURIComponent(g) %><%= sortBy !== 'year_desc' ? '&sortBy=' + sortBy : '' %>"
+                        class="genre-pill <%= genre && genre.toLowerCase() === g.toLowerCase() ? 'active' : '' %>"
+                    >
+                        <%= g %>
+                    </a>
+                <% }) %>
+            </div>
+        </div>
+
+        <!-- Quick Filter Tags / Active Filters Indicator -->
+        <% if (query || (genre && genre.toLowerCase() !== 'all') || year || cast || sortBy !== 'year_desc') { %>
+            <div class="active-filters">
+                <span class="active-filters-label">Active Filters:</span>
+                <% if (query) { %>
+                    <span class="filter-badge">Query: "<%= query %>" <a href="/?<%= genre ? 'genre=' + encodeURIComponent(genre) + '&' : '' %><%= sortBy !== 'year_desc' ? 'sortBy=' + sortBy : '' %>">&times;</a></span>
+                <% } %>
+                <% if (genre && genre.toLowerCase() !== 'all') { %>
+                    <span class="filter-badge">Genre: <%= genre %> <a href="/?<%= query ? 'q=' + encodeURIComponent(query) + '&' : '' %><%= sortBy !== 'year_desc' ? 'sortBy=' + sortBy : '' %>">&times;</a></span>
+                <% } %>
+                <% if (year) { %>
+                    <span class="filter-badge">Year: <%= year %> <a href="/">&times;</a></span>
+                <% } %>
+                <% if (cast) { %>
+                    <span class="filter-badge">Actor: <%= cast %> <a href="/">&times;</a></span>
+                <% } %>
+                <% if (sortBy !== 'year_desc') { %>
+                    <span class="filter-badge">Sorted by: <%= sortBy.replace('_', ' ') %> <a href="/">&times;</a></span>
+                <% } %>
+                <a href="/" class="clear-all-filters-btn">Clear All Filters</a>
+            </div>
+        <% } %>
+    </section>
+
+    <!-- Section Header -->
+    <div class="section-header">
+        <div class="section-title-wrap">
+            <h2 class="section-heading"><%= pageTitle %></h2>
+            <span class="section-count"><%= totalMovies %> Title<%= totalMovies === 1 ? '' : 's' %> Found</span>
+        </div>
+
+        <div class="section-actions">
+            <a href="/movies/create" class="btn btn-outline btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Add Movie</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Movie Grid -->
+    <% if (movies && movies.length > 0) { %>
+        <div class="movie-grid">
+            <% movies.forEach(movie => { %>
+                <article class="movie-card">
+                    <div class="movie-card-poster-wrap">
+                        <a href="/movies/show/<%= movie._id %>" class="poster-link">
+                            <img
+                                src="<%= getMoviePoster(movie.thumbnail, movie.poster) %>"
+                                alt="<%= movie.title %>"
+                                class="movie-card-poster"
+                                loading="lazy"
+                                onerror="this.onerror=null;this.src='/img/placeholder-poster.svg';"
+                            >
+                        </a>
+
+                        <!-- Rating Badge -->
+                        <% if (movie.rating) { %>
+                            <div class="card-rating-badge">
+                                <span class="star">★</span> <%= Number(movie.rating).toFixed(1) %>
+                            </div>
+                        <% } %>
+
+                        <!-- Year & Duration Chip -->
+                        <div class="card-year-badge">
+                            <%= movie.year %>
+                        </div>
+
+                        <!-- Hover Quick Action Overlay -->
+                        <div class="card-overlay">
+                            <a href="/movies/show/<%= movie._id %>" class="card-view-btn" title="View Details">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                                <span>Details</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="movie-card-body">
+                        <div class="card-meta-line">
+                            <% if (movie.duration) { %>
+                                <span class="meta-duration"><%= movie.duration %></span>
+                            <% } %>
+                            <% if (movie.director) { %>
+                                <span class="meta-director" title="Director: <%= movie.director %>">
+                                    <%= movie.director %>
+                                </span>
+                            <% } %>
+                        </div>
+
+                        <h3 class="movie-card-title">
+                            <a href="/movies/show/<%= movie._id %>" title="<%= movie.title %>">
+                                <%= movie.title %>
+                            </a>
+                        </h3>
+
+                        <!-- Genre Tags -->
+                        <div class="movie-card-genres">
+                            <% (movie.genres || []).slice(0, 3).forEach(g => { %>
+                                <a href="/?genre=<%= encodeURIComponent(g) %>" class="card-genre-pill"><%= g %></a>
+                            <% }) %>
+                            <% if (movie.genres && movie.genres.length > 3) { %>
+                                <span class="card-genre-more">+<%= movie.genres.length - 3 %></span>
+                            <% } %>
+                        </div>
+
+                        <!-- Cast preview -->
+                        <% if (movie.cast && movie.cast.length > 0) { %>
+                            <p class="movie-card-cast" title="Cast: <%= movie.cast.join(', ') %>">
+                                <span class="cast-icon">👥</span>
+                                <%= movie.cast.slice(0, 2).join(", ") %><%= movie.cast.length > 2 ? '...' : '' %>
+                            </p>
+                        <% } %>
+
+                        <!-- Card Actions -->
+                        <div class="movie-card-actions">
+                            <a href="/movies/show/<%= movie._id %>" class="btn-card-action btn-card-details">
+                                Details
+                            </a>
+                            <a href="/movies/edit/<%= movie._id %>" class="btn-card-action btn-card-edit" title="Edit this movie">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </a>
+                            <form
+                                action="/movies/delete/<%= movie._id %>"
+                                method="post"
+                                class="delete-form"
+                                onsubmit="return confirm('Are you sure you want to permanently delete this movie?');"
+                            >
+                                <button type="submit" class="btn-card-action btn-card-delete" title="Delete movie">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <div class="empty-state">
+            <div class="empty-icon">🎬</div>
+            <h3 class="empty-title">No movies match your criteria</h3>
+            <p class="empty-desc">
+                We couldn't find any movie matching your current search or filters.
+                Try adjusting your search terms or exploring a different genre.
+            </p>
+            <div class="empty-actions">
+                <a href="/" class="btn btn-primary btn-md">Reset All Filters</a>
+                <a href="/movies/create" class="btn btn-secondary btn-md">+ Add New Movie</a>
+            </div>
+        </div>
+    <% } %>
+
+    <% if (totalPages > 1) { %>
+        <nav class="catalog-pagination" aria-label="Movie pages">
+            <% if (page > 1) { %>
+                <a class="pagination-link" href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=<%= page - 1 %>">← Previous</a>
+            <% } else { %>
+                <span class="pagination-link disabled">← Previous</span>
+            <% } %>
+
+            <div class="pagination-pages">
+                <% const paginationStart = Math.max(1, page - 2); %>
+                <% const paginationEnd = Math.min(totalPages, page + 2); %>
+                <% if (paginationStart > 1) { %>
+                    <a class="pagination-number" href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=1">1</a>
+                    <% if (paginationStart > 2) { %><span class="pagination-number disabled">...</span><% } %>
+                <% } %>
+                <% for (let pageNumber = paginationStart; pageNumber <= paginationEnd; pageNumber++) { %>
+                    <% if (pageNumber === page) { %>
+                        <span class="pagination-number active" aria-current="page"><%= pageNumber %></span>
+                    <% } else { %>
+                        <a class="pagination-number" href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=<%= pageNumber %>"><%= pageNumber %></a>
+                    <% } %>
+                <% } %>
+                <% if (paginationEnd < totalPages) { %>
+                    <% if (paginationEnd < totalPages - 1) { %><span class="pagination-number disabled">...</span><% } %>
+                    <a class="pagination-number" href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=<%= totalPages %>"><%= totalPages %></a>
+                <% } %>
+            </div>
+
+            <% if (page < totalPages) { %>
+                <a class="pagination-link" href="/?<%= paginationQuery ? paginationQuery + '&' : '' %>page=<%= page + 1 %>">Next →</a>
+            <% } else { %>
+                <span class="pagination-link disabled">Next →</span>
+            <% } %>
+        </nav>
+    <% } %>
+
+</div>
+
+<%- include('../../partials/siteFooter') %>
